@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  padding: clamp(2rem, 5vw, 4rem) clamp(1.25rem, 4vw, 3rem);
+  background: linear-gradient(165deg, #f7f1e4, #e8f2f8);
+  color: var(--color-ink);
+}
+
+.privacy {
+  max-width: 40rem;
+}
+
+.privacy__eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-sky-deep);
+}
+
+h1 {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  letter-spacing: -0.03em;
+}
+
+p {
+  line-height: 1.6;
+  color: var(--color-ink-muted);
+}
+
+a {
+  color: var(--color-sky-deep);
+}
+
+code {
+  font-size: 0.9em;
+  color: var(--color-ink);
+}

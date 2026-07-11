@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem clamp(1.25rem, 4vw, 3rem);
+  background: color-mix(in srgb, #f7f1e4 82%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+}
+
+.site-header__brand {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.site-header__nav {
+  display: flex;
+  gap: 1.1rem;
+}
+
+.site-header__nav a {
+  color: var(--color-ink-muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.site-header__nav a:hover {
+  color: var(--color-sky-deep);
+}
+
+.site-main {
+  min-height: 70vh;
+}
+
+.site-footer {
+  padding: 1.5rem clamp(1.25rem, 4vw, 3rem) 2rem;
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.site-footer p {
+  margin: 0;
+}

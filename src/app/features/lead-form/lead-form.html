@@ -1,0 +1,200 @@
+<form class="lead-form" (submit)="onSubmit($event)" novalidate>
+  <div class="lead-form__intro">
+    <p class="lead-form__eyebrow">Ukraine · Contact</p>
+    <h2 id="lead-form-title">Tell us about your project</h2>
+    <p class="lead-form__lede">
+      Share a few details and the KOLSS team in Ukraine will get back to you.
+    </p>
+  </div>
+
+  @if (errorSummary().length > 0 && !isSuccess()) {
+    <div class="lead-form__summary" role="alert">
+      <p class="lead-form__summary-title">Please fix the following:</p>
+      <ul>
+        @for (item of errorSummary(); track item.field) {
+          <li>
+            <strong>{{ item.label }}:</strong> {{ item.message }}
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
+  <div class="lead-form__status" aria-live="polite" aria-atomic="true">
+    @if (statusMessage()) {
+      <p
+        class="lead-form__status-message"
+        [class.lead-form__status-message--success]="isSuccess()"
+        [class.lead-form__status-message--failure]="isFailure()"
+        [class.lead-form__status-message--pending]="isBusy()"
+      >
+        {{ statusMessage() }}
+      </p>
+    }
+  </div>
+
+  <div class="lead-form__grid">
+    <div class="field">
+      <label for="lead-name">Name <span aria-hidden="true">*</span></label>
+      <input
+        id="lead-name"
+        type="text"
+        autocomplete="name"
+        [formField]="leadForm.name"
+        [attr.aria-invalid]="!!fieldError('name')"
+        [attr.aria-describedby]="fieldError('name') ? 'lead-name-error' : null"
+      />
+      @if (fieldError('name'); as message) {
+        <p id="lead-name-error" class="field__error">{{ message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="lead-phone">Phone <span aria-hidden="true">*</span></label>
+      <input
+        id="lead-phone"
+        type="tel"
+        autocomplete="tel"
+        [formField]="leadForm.phone"
+        [attr.aria-invalid]="!!fieldError('phone')"
+        [attr.aria-describedby]="fieldError('phone') ? 'lead-phone-error' : null"
+      />
+      @if (fieldError('phone'); as message) {
+        <p id="lead-phone-error" class="field__error">{{ message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="lead-email">Email <span class="field__optional">(optional)</span></label>
+      <input
+        id="lead-email"
+        type="email"
+        autocomplete="email"
+        [formField]="leadForm.email"
+        [attr.aria-invalid]="!!fieldError('email')"
+        [attr.aria-describedby]="fieldError('email') ? 'lead-email-error' : null"
+      />
+      @if (fieldError('email'); as message) {
+        <p id="lead-email-error" class="field__error">{{ message }}</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="lead-city">City <span class="field__optional">(optional)</span></label>
+      <input
+        id="lead-city"
+        type="text"
+        autocomplete="address-level2"
+        [formField]="leadForm.city"
+        [attr.aria-invalid]="!!fieldError('city')"
+        [attr.aria-describedby]="fieldError('city') ? 'lead-city-error' : null"
+      />
+      @if (fieldError('city'); as message) {
+        <p id="lead-city-error" class="field__error">{{ message }}</p>
+      }
+    </div>
+  </div>
+
+  <div class="field field--full">
+    <label for="lead-project">
+      Project description <span class="field__optional">(optional)</span>
+    </label>
+    <textarea
+      id="lead-project"
+      rows="5"
+      [formField]="leadForm.projectDescription"
+      [attr.aria-invalid]="!!fieldError('projectDescription')"
+      [attr.aria-describedby]="fieldError('projectDescription') ? 'lead-project-error' : null"
+    ></textarea>
+    @if (fieldError('projectDescription'); as message) {
+      <p id="lead-project-error" class="field__error">{{ message }}</p>
+    }
+  </div>
+
+  <div class="field field--full">
+    <label for="lead-files">
+      Attachments <span class="field__optional">(optional, max 5 · 5 MiB each)</span>
+    </label>
+    <input
+      id="lead-files"
+      type="file"
+      multiple
+      [attr.accept]="acceptAttr"
+      [disabled]="isBusy()"
+      (change)="onFilesSelected($event)"
+      [attr.aria-invalid]="!!fileError()"
+      [attr.aria-describedby]="fileError() ? 'lead-files-error' : 'lead-files-hint'"
+    />
+    <p id="lead-files-hint" class="field__hint">
+      Allowed: PDF, TXT, CSV, JPG, PNG, WEBP.
+    </p>
+    @if (fileError(); as message) {
+      <p id="lead-files-error" class="field__error">{{ message }}</p>
+    }
+    @if (selectedFiles().length > 0) {
+      <ul class="file-list" aria-label="Selected attachments">
+        @for (item of selectedFiles(); track item.clientFileId) {
+          <li class="file-list__item">
+            <span class="file-list__name">{{ item.filename }}</span>
+            <span class="file-list__meta">{{ fileSizeLabel(item.sizeBytes) }}</span>
+            <button
+              type="button"
+              class="file-list__remove"
+              [disabled]="isBusy()"
+              (click)="removeFile(item.clientFileId)"
+            >
+              Remove <span class="visually-hidden">{{ item.filename }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <div class="field field--consent">
+    <label class="consent">
+      <input type="checkbox" [formField]="leadForm.privacyAccepted" />
+      <span>
+        I agree to the processing of my data as described in the
+        <a routerLink="/privacy">privacy policy</a>.
+        <span aria-hidden="true">*</span>
+      </span>
+    </label>
+    @if (fieldError('privacyAccepted'); as message) {
+      <p id="lead-privacy-error" class="field__error">{{ message }}</p>
+    }
+  </div>
+
+  @if (turnstileEnabled) {
+    <app-turnstile (tokenChange)="onBotToken($event)" />
+  }
+
+  <div class="honeypot" aria-hidden="true">
+    <label for="lead-website">Website</label>
+    <input
+      id="lead-website"
+      type="text"
+      tabindex="-1"
+      autocomplete="off"
+      [formField]="leadForm.website"
+    />
+  </div>
+
+  <div class="lead-form__actions">
+    <button type="submit" class="btn btn--primary" [disabled]="isBusy()">
+      @if (isBusy()) {
+        Sending…
+      } @else if (isFailure()) {
+        Try again
+      } @else {
+        Send request
+      }
+    </button>
+
+    @if (isSuccess() || isFailure()) {
+      <button type="button" class="btn btn--ghost" (click)="resetForm()">
+        Start over
+      </button>
+    }
+  </div>
+</form>

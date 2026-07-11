@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": "dist/kolss-web-ua-angular/browser",
+  "framework": null,
+  "build": {
+    "env": {
+      "NODE_VERSION": "24"
+    }
+  }
+}
