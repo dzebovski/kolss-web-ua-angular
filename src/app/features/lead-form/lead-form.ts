@@ -20,13 +20,6 @@ import {
 } from '@angular/forms/signals';
 
 import { isTurnstileEnabled, PRIVACY_POLICY_VERSION } from '../../core/config/public-config';
-import {
-  ALLOWED_LEAD_FILE_EXTENSIONS,
-  formatFileSize,
-  SelectedLeadFile,
-  toLeadFileDescriptors,
-  validateAndBuildSelectedFiles,
-} from './lead-files';
 import { LeadSubmissionApiError, LeadSubmissionService } from './lead-submission.service';
 import {
   EMPTY_LEAD_FORM,
@@ -55,11 +48,8 @@ export class LeadForm {
   protected readonly statusMessage = signal('');
   protected readonly serverFieldErrors = signal<Record<string, string>>({});
   protected readonly idempotencyKey = signal(createIdempotencyKey());
-  protected readonly selectedFiles = signal<SelectedLeadFile[]>([]);
-  protected readonly fileError = signal('');
   protected readonly botToken = signal('');
   protected readonly turnstileEnabled = isTurnstileEnabled();
-  protected readonly acceptAttr = ALLOWED_LEAD_FILE_EXTENSIONS.join(',');
 
   protected readonly leadForm = form(this.model, (schemaPath) => {
     required(schemaPath.name, { message: 'Name is required' });
@@ -89,8 +79,7 @@ export class LeadForm {
   });
 
   protected readonly isBusy = computed(() => {
-    const s = this.status();
-    return s === 'creating' || s === 'uploading' || s === 'completing';
+    return this.status() === 'creating';
   });
   protected readonly isSuccess = computed(() => this.status() === 'success');
   protected readonly isFailure = computed(() => this.status() === 'failure');
@@ -131,10 +120,6 @@ export class LeadForm {
       push(field, message);
     }
 
-    if (this.fileError()) {
-      push('files', this.fileError());
-    }
-
     return items;
   });
 
@@ -151,34 +136,8 @@ export class LeadForm {
     return state.errors()[0].message ?? '';
   }
 
-  protected fileSizeLabel(bytes: number): string {
-    return formatFileSize(bytes);
-  }
-
   protected onBotToken(token: string): void {
     this.botToken.set(token);
-  }
-
-  protected onFilesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const list = input.files;
-    if (!list?.length) {
-      return;
-    }
-
-    const result = validateAndBuildSelectedFiles(list, this.selectedFiles());
-    if (result.error) {
-      this.fileError.set(result.error.message);
-    } else {
-      this.fileError.set('');
-      this.selectedFiles.set(result.files);
-    }
-    input.value = '';
-  }
-
-  protected removeFile(clientFileId: string): void {
-    this.selectedFiles.update((files) => files.filter((f) => f.clientFileId !== clientFileId));
-    this.fileError.set('');
   }
 
   protected onSubmit(event: Event): void {
@@ -193,7 +152,6 @@ export class LeadForm {
 
     await submit(this.leadForm, async () => {
       this.serverFieldErrors.set({});
-      this.fileError.set('');
       this.status.set('creating');
       this.statusMessage.set('Sending your request…');
 
@@ -203,26 +161,10 @@ export class LeadForm {
         privacyPolicyVersion: PRIVACY_POLICY_VERSION,
         pageUrl: this.currentPageUrl(),
         botToken: this.botToken(),
-        files: toLeadFileDescriptors(this.selectedFiles()),
       });
 
       try {
-        const response = await this.leadService.submit(
-          request,
-          this.selectedFiles(),
-          (progress) => {
-            this.status.set(progress.phase);
-            if (progress.phase === 'creating') {
-              this.statusMessage.set('Sending your request…');
-            } else if (progress.phase === 'uploading') {
-              this.statusMessage.set(
-                `Uploading files (${progress.uploaded}/${progress.total})…`,
-              );
-            } else {
-              this.statusMessage.set('Finalizing your request…');
-            }
-          },
-        );
+        const response = await this.leadService.submit(request);
 
         this.status.set('success');
         this.statusMessage.set(
@@ -242,8 +184,6 @@ export class LeadForm {
     this.model.set({ ...EMPTY_LEAD_FORM });
     this.leadForm().reset();
     this.serverFieldErrors.set({});
-    this.selectedFiles.set([]);
-    this.fileError.set('');
     this.botToken.set('');
     this.status.set('idle');
     this.statusMessage.set('');
@@ -255,8 +195,6 @@ export class LeadForm {
     this.model.set({ ...EMPTY_LEAD_FORM });
     this.leadForm().reset();
     this.serverFieldErrors.set({});
-    this.selectedFiles.set([]);
-    this.fileError.set('');
     this.botToken.set('');
     this.idempotencyKey.set(createIdempotencyKey());
     this.turnstile()?.reset();
@@ -271,8 +209,6 @@ export class LeadForm {
         const formField = mapApiFieldToFormField(detail.field);
         if (formField) {
           mapped[formField] = detail.message;
-        } else if (detail.field.startsWith('files')) {
-          this.fileError.set(detail.message);
         }
       }
       this.serverFieldErrors.set(mapped);

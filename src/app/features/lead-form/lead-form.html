@@ -111,46 +111,6 @@
     }
   </div>
 
-  <div class="field field--full">
-    <label for="lead-files">
-      Attachments <span class="field__optional">(optional, max 5 · 5 MiB each)</span>
-    </label>
-    <input
-      id="lead-files"
-      type="file"
-      multiple
-      [attr.accept]="acceptAttr"
-      [disabled]="isBusy()"
-      (change)="onFilesSelected($event)"
-      [attr.aria-invalid]="!!fileError()"
-      [attr.aria-describedby]="fileError() ? 'lead-files-error' : 'lead-files-hint'"
-    />
-    <p id="lead-files-hint" class="field__hint">
-      Allowed: PDF, TXT, CSV, JPG, PNG, WEBP.
-    </p>
-    @if (fileError(); as message) {
-      <p id="lead-files-error" class="field__error">{{ message }}</p>
-    }
-    @if (selectedFiles().length > 0) {
-      <ul class="file-list" aria-label="Selected attachments">
-        @for (item of selectedFiles(); track item.clientFileId) {
-          <li class="file-list__item">
-            <span class="file-list__name">{{ item.filename }}</span>
-            <span class="file-list__meta">{{ fileSizeLabel(item.sizeBytes) }}</span>
-            <button
-              type="button"
-              class="file-list__remove"
-              [disabled]="isBusy()"
-              (click)="removeFile(item.clientFileId)"
-            >
-              Remove <span class="visually-hidden">{{ item.filename }}</span>
-            </button>
-          </li>
-        }
-      </ul>
-    }
-  </div>
-
   <div class="field field--consent">
     <label class="consent">
       <input type="checkbox" [formField]="leadForm.privacyAccepted" />

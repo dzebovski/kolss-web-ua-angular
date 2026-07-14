@@ -1,10 +1,3 @@
-export interface LeadFileDescriptor {
-  client_file_id: string;
-  filename: string;
-  content_type: string;
-  size_bytes: number;
-}
-
 export interface LeadSubmissionRequest {
   idempotency_key: string;
   name: string;
@@ -17,53 +10,22 @@ export interface LeadSubmissionRequest {
   page_url: string | null;
   bot_token: string;
   website: string;
-  files: LeadFileDescriptor[];
-}
-
-export interface LeadUploadDescriptor {
-  file_id: string;
-  client_file_id: string;
-  method: 'PUT';
-  upload_url: string;
-  headers: Record<string, string>;
-  expires_at: string;
 }
 
 export interface LeadCreateResponse {
   submission_id: string;
-  status: 'awaiting_upload' | 'accepted';
-  duplicate: boolean;
-  submission_token: string;
-  uploads: LeadUploadDescriptor[];
-  request_id: string;
-  lead_id: string | null;
-}
-
-export interface LeadCompleteFile {
-  file_id: string;
-  etag?: string;
-}
-
-export interface LeadCompleteRequest {
-  files: LeadCompleteFile[];
-}
-
-export interface LeadCompleteResponse {
-  id: string;
-  submission_id: string;
   status: 'accepted';
   duplicate: boolean;
-  file_count: number;
   request_id: string;
+  lead_id: string;
 }
 
 export interface LeadSubmitResult {
-  lead_id: string | null;
+  lead_id: string;
   submission_id: string;
   status: 'accepted';
   duplicate: boolean;
   request_id: string;
-  file_count: number;
 }
 
 export interface ApiFieldError {
@@ -83,8 +45,6 @@ export interface ApiErrorBody {
 export type LeadFormStatus =
   | 'idle'
   | 'creating'
-  | 'uploading'
-  | 'completing'
   | 'success'
   | 'failure';
 
@@ -122,7 +82,6 @@ export const FIELD_LABELS: Record<string, string> = {
   page_url: 'Page URL',
   privacy_policy_version: 'Privacy policy version',
   bot_token: 'Bot verification',
-  files: 'Attachments',
 };
 
 export function createIdempotencyKey(): string {
@@ -147,9 +106,8 @@ export function buildLeadSubmissionRequest(input: {
   privacyPolicyVersion: string;
   pageUrl?: string | null;
   botToken: string;
-  files: LeadFileDescriptor[];
 }): LeadSubmissionRequest {
-  const { model, idempotencyKey, privacyPolicyVersion, pageUrl, botToken, files } = input;
+  const { model, idempotencyKey, privacyPolicyVersion, pageUrl, botToken } = input;
 
   return {
     idempotency_key: idempotencyKey,
@@ -163,7 +121,6 @@ export function buildLeadSubmissionRequest(input: {
     page_url: pageUrl?.trim() ? pageUrl.trim() : null,
     bot_token: botToken,
     website: model.website,
-    files,
   };
 }
 
